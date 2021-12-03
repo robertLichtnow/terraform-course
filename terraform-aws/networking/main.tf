@@ -44,7 +44,7 @@ resource "aws_route_table_association" "mtc_public_assoc" {
   route_table_id = aws_route_table.mtc_public_rt.id
 }
 
-resource "aws_subnet" "mtc_private_subnets" {
+resource "aws_subnet" "mtc_private_subnet" {
   count                   = var.private_sn_count
   vpc_id                  = aws_vpc.mtc_vpc.id
   cidr_block              = var.private_cidrs[count.index]
@@ -108,5 +108,15 @@ resource "aws_security_group" "mtc_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_subnet_group" "mtc_rds_subnetgroup" {
+  count = var.db_subnet_group == true ? 1 : 0
+  name = "mtc_rds_subnetgroup"
+  subnet_ids = aws_subnet.mtc_private_subnet.*.id
+
+  tags = {
+    Name = "mtc_rds_sng"
   }
 }

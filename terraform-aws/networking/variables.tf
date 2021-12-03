@@ -31,3 +31,7 @@ variable "access_ip" {
 variable "security_groups" {
   type = map
 }
+
+variable "db_subnet_group" {
+  type = bool
+}
