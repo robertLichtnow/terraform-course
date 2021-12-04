@@ -17,7 +17,7 @@ module "loadbalacing" {
   source                 = "./loadbalancing"
   public_sg              = module.networking.public_sg
   public_subnets         = module.networking.public_subnets
-  tg_port                = 80
+  tg_port                = 8000
   tg_protocol            = "HTTP"
   vpc_id                 = module.networking.vpc_id
   lb_healthy_threshold   = 2
@@ -28,16 +28,35 @@ module "loadbalacing" {
   listener_protocol      = "HTTP"
 }
 
-# module "database" {
-#   source = "./database"
-#   db_storage = 10
-#   db_engine_version = "5.7.22"
-#   db_instance_class = "db.t2.micro"
-#   dbname = var.dbname
-#   dbuser = var.dbuser
-#   dbpassword = var.dbpassword
-#   db_identifier = "mtc-db"
-#   skip_db_snapshot = true
-#   db_subnet_group_name = module.networking.db_subnet_group_name[0]
-#   vpc_security_group_ids = module.networking.db_security_group
-# }
+module "compute" {
+  source              = "./compute"
+  instance_count      = 2
+  instance_type       = "t3.micro"
+  public_sg           = module.networking.public_sg
+  public_subnets      = module.networking.public_subnets
+  vol_size            = 10
+  key_name            = "mtckey"
+  public_key_path     = "/Users/robert/.ssh/keymtc.pub"
+  user_data_path      = "${path.root}/userdata.tpl"
+  dbname              = var.dbname
+  dbuser              = var.dbuser
+  dbpassword          = var.dbpassword
+  db_endpoint         = module.database.db_endpoint
+  lb_target_group_arn = module.loadbalacing.lb_target_group_arn
+  tg_port             = 8000
+  private_ssh_key_path= "/Users/robert/.ssh/keymtc"
+}
+
+module "database" {
+  source                 = "./database"
+  db_storage             = 10
+  db_engine_version      = "5.7.22"
+  db_instance_class      = "db.t2.micro"
+  dbname                 = var.dbname
+  dbuser                 = var.dbuser
+  dbpassword             = var.dbpassword
+  db_identifier          = "mtc-db"
+  skip_db_snapshot       = true
+  db_subnet_group_name   = module.networking.db_subnet_group_name[0]
+  vpc_security_group_ids = module.networking.db_security_group
+}
