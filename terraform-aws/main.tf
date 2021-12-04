@@ -36,7 +36,7 @@ module "compute" {
   public_subnets      = module.networking.public_subnets
   vol_size            = 10
   key_name            = "mtckey"
-  public_key_path     = "/Users/robert/.ssh/keymtc.pub"
+  public_key_path     = var.public_ssh_key_path
   user_data_path      = "${path.root}/userdata.tpl"
   dbname              = var.dbname
   dbuser              = var.dbuser
@@ -44,7 +44,7 @@ module "compute" {
   db_endpoint         = module.database.db_endpoint
   lb_target_group_arn = module.loadbalacing.lb_target_group_arn
   tg_port             = 8000
-  private_ssh_key_path= "/Users/robert/.ssh/keymtc"
+  private_ssh_key_path= var.private_ssh_key_path
 }
 
 module "database" {
